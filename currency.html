@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Currency Converter</title>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelector('form').onsubmit = () => {
+                    const amount = parseFloat(document.querySelector('#amount').value);
+                    const fromCurrency = document.querySelector('#from-currency').value;
+                    const toCurrency = document.querySelector('#to-currency').value;
+
+                    if (isNaN(amount) || amount <= 0) {
+                        document.querySelector('#result').innerHTML = 'Please enter a valid amount.';
+                        return false;
+                    }
+
+                    // ดึงข้อมูลอัตราแลกเปลี่ยนโดยอิงตามสกุลเงินต้นทางที่เลือก
+                    fetch(`https://open.er-api.com/v6/latest/${fromCurrency}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const rate = data.rates[toCurrency];
+                        if (rate !== undefined) {
+                            const convertedAmount = amount * rate;
+                            document.querySelector('#result').innerHTML = 
+                                `${amount.toLocaleString()} ${fromCurrency} = <strong>${convertedAmount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${toCurrency}</strong>`;
+                        } else {
+                            document.querySelector('#result').innerHTML = 'Error converting currency.';
+                        }
+                    })
+                    .catch(error => {
+                        console.log('Error:', error);
+                        document.querySelector('#result').innerHTML = 'Error fetching exchange rates.';
+                    });
+
+                    return false;
+                };
+            });
+        </script>
+    </head>
+    <body>
+        <h2>Currency Converter</h2>
+        <form>
+            <!-- ช่องกรอกจำนวนเงิน -->
+            <input id="amount" placeholder="Amount" type="number" step="any" required>
+            
+            <!-- สกุลเงินต้นทาง (เลือกจากรายการ) -->
+            <select id="from-currency">
+                <option value="USD">USD </option>
+                <option value="THB" selected>THB </option>
+                <option value="EUR">EUR </option>
+                <option value="JPY">JPY </option>
+                <option value="GBP">GBP </option>
+                <option value="CNY">CNY </option>
+                <option value="KRW">KRW </option>
+            </select>
+
+            <span></span>
+
+            <!-- สกุลเงินปลายทาง (เลือกจากรายการ) -->
+            <select id="to-currency">
+                <option value="USD" selected>USD </option>
+                <option value="THB">THB </option>
+                <option value="EUR">EUR </option>
+                <option value="JPY">JPY </option>
+                <option value="GBP">GBP </option>
+                <option value="CNY">CNY </option>
+                <option value="KRW">KRW </option>
+            </select>
+
+            <input type="submit" value="Convert">
+        </form>
+        <br>
+        <div id="result"></div>
+    </body>
+</html>
